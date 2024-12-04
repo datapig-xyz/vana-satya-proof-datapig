@@ -12,7 +12,7 @@ INPUT_DIR, OUTPUT_DIR, SEALED_DIR = '/input', '/output', '/sealed'
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
-
+# load from env
 def load_config() -> Dict[str, Any]:
     """Load proof configuration from environment variables."""
     config = {
