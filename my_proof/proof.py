@@ -14,6 +14,39 @@ class Proof:
         self.proof_response = ProofResponse(dlp_id=config['dlp_id'])
 
     def generate(self) -> ProofResponse:
+        logging.info("Starting proof generation")
+        total_score = 0
+        score_threshold = 0.2
+
+        for input_filename in os.listdir(self.config['input_dir']):
+            input_file = os.path.join(self.config['input_dir'], input_filename)
+            if os.path.splitext(input_file)[1].lower() == '.json':
+                total_score = 1
+        
+       # Calculate proof-of-contribution scores: https://docs.vana.org/vana/core-concepts/key-elements/proof-of-contribution/example-implementation
+        self.proof_response.ownership = total_score  # Does the data belong to the user? Or is it fraudulent?
+        self.proof_response.quality = total_score  # How high quality is the data?
+        self.proof_response.authenticity = 0  # How authentic is the data is (ie: not tampered with)? (Not implemented here)
+        self.proof_response.uniqueness = 0  # How unique is the data relative to other datasets? (Not implemented here)
+
+        # Calculate overall score and validity
+        self.proof_response.score = 0.6 * self.proof_response.quality + 0.4 * self.proof_response.ownership
+        self.proof_response.valid = total_score >= score_threshold
+
+        # Additional (public) properties to include in the proof about the data
+        self.proof_response.attributes = {
+            'total_score': total_score,
+            'score_threshold': score_threshold,
+        }
+
+        # Additional metadata about the proof, written onchain
+        self.proof_response.metadata = {
+            'dlp_id': self.config['dlp_id'],
+        }
+
+        return self.proof_response
+
+    def generate2(self) -> ProofResponse:
         """Generate proofs for all input files."""
         logging.info("Starting proof generation")
 
