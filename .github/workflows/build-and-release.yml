@@ -53,6 +53,8 @@ jobs:
     - name: Sign GSC image
       run: |
         cd gsc
+        more ../config.yaml
+        ls my-proof
         ./gsc sign-image my-proof ../signing_key.pem -c ../config.yaml
 
     - name: Export GSC image to file
