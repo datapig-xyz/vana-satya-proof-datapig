@@ -68,7 +68,6 @@ class Proof:
         self.proof_response.attributes = {
             'total_score': total_score,
             'score_threshold': score_threshold,
-            'email_verified': self.config['user_email'],
         }
 
         # Additional metadata about the proof, written onchain
