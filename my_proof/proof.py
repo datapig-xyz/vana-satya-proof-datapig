@@ -21,10 +21,40 @@ class Proof:
 
         for input_filename in os.listdir(self.config['input_dir']):
             input_file = os.path.join(self.config['input_dir'], input_filename)
-            if os.path.splitext(input_file)[1].lower() == '.json':
+            # if os.path.splitext(input_file)[1].lower() == '.json':
+            #     total_score = 1
+            try:
+                with open(input_file, 'r') as f:
+                    json_data = json.load(f)
+                
+                # Validate JSON structure
+                if not all(key in json_data for key in ['address', 'unixtime', 'preferences']):
+                    logging.error(f"Missing required keys in JSON file {input_file}")
+                    total_score = 0
+                    continue
+                
+                if not all(key in json_data['preferences'] for key in ['categories', 'likes']):
+                    logging.error(f"Missing required preference keys in JSON file {input_file}")
+                    total_score = 0
+                    continue
+                
+                # Validate data types
+                if not isinstance(json_data['address'], str) or \
+                not isinstance(json_data['unixtime'], int) or \
+                not isinstance(json_data['preferences']['categories'], list) or \
+                not isinstance(json_data['preferences']['likes'], dict):
+                    logging.error(f"Invalid data types in JSON file {input_file}")
+                    total_score = 0
+                    continue
+                
+                # If all validations pass, set score to 1
                 total_score = 1
-        
-       # Calculate proof-of-contribution scores: https://docs.vana.org/vana/core-concepts/key-elements/proof-of-contribution/example-implementation
+                
+            except (json.JSONDecodeError, IOError, KeyError) as e:
+                logging.error(f"Error processing JSON file {input_file}: {e}")
+                total_score = 0
+
+        # Calculate proof-of-contribution scores: https://docs.vana.org/vana/core-concepts/key-elements/proof-of-contribution/example-implementation
         self.proof_response.ownership = total_score  # Does the data belong to the user? Or is it fraudulent?
         self.proof_response.quality = total_score  # How high quality is the data?
         self.proof_response.authenticity = 0  # How authentic is the data is (ie: not tampered with)? (Not implemented here)
